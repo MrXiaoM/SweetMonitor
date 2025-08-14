@@ -9,3 +9,6 @@ monitor:
     color: WHITE
     style: SOLID
     reversed: true
+  # 指定玩家不会被视奸
+  blacklist:
+    - Herobrine

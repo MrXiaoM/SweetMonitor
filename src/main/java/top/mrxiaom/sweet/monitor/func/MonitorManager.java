@@ -22,6 +22,7 @@ import java.util.*;
 public class MonitorManager extends AbstractModule implements Listener {
     private final Map<UUID, Monitor> monitors = new HashMap<>();
     private final Map<UUID, Monitor> monitorsByTarget = new HashMap<>();
+    private final Set<String> blackList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private long watchMills;
     private String barTitle;
     private String barEmpty;
@@ -38,6 +39,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         List<Player> players = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (monitors.containsKey(player.getUniqueId())) continue;
+            if (blackList.contains(player.getName())) continue;
             players.add(player);
         }
         return players;
@@ -107,6 +109,9 @@ public class MonitorManager extends AbstractModule implements Listener {
         barColor = Util.valueOr(BarColor.class, config.getString("monitor.camera-bossbar.color"), BarColor.WHITE);
         barStyle = Util.valueOr(BarStyle.class, config.getString("monitor.camera-bossbar.style"), BarStyle.SOLID);
         barReversed = config.getBoolean("monitor.camera-bossbar.reversed", true);
+
+        blackList.clear();
+        blackList.addAll(config.getStringList("monitor.blacklist"));
     }
 
     @EventHandler
