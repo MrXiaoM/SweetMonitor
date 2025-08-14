@@ -9,9 +9,19 @@ monitor:
   watch-seconds-per-player: 10.0
   # BOSS 血条设置，将 title 选项注释或留空，则关闭 BOSS 血条功能
   camera-bossbar:
-    title: '&c👁 &f正在视奸&e %player_name% &c👁'
+    # 可用时间变量
+    # %time%, %time_int% 正常时间
+    # %time_reversed%, %time_reversed_int% 倒计时
+    title: '&c👁 &f正在视奸&e %player_name%&f，剩余 %time_reversed%s &c👁'
+    # 只剩一人时
+    last-one: '&c👁 &f正在视奸&e %player_name% &c👁'
+    # 没有玩家时
     empty: '&f暂无可视奸的玩家'
+    # 血条颜色，可用颜色请到以下链接查看
+    # https://javadoc.mcio.dev/spigot/1.21.4/org/bukkit/boss/BarColor.html
     color: WHITE
+    # 血条样式，可用样式请到以下链接查看
+    # https://javadoc.mcio.dev/spigot/1.21.4/org/bukkit/boss/BarStyle.html
     style: SOLID
     # 进度是否反向
     # true  -- 血条随时间递减

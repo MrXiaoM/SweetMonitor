@@ -16,7 +16,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.api.IRunTask;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ColorHelper;
@@ -36,8 +35,7 @@ public class MonitorManager extends AbstractModule implements Listener {
     private final Map<UUID, Long> inactiveStartTime = new HashMap<>();
     private final Set<ActiveType> inactiveEnable = new HashSet<>();
     private long watchMills;
-    private String barTitle;
-    private String barEmpty;
+    private String barTitle, barLastOne, barEmpty;
     private BarColor barColor;
     private BarStyle barStyle;
     private boolean barReversed;
@@ -52,12 +50,11 @@ public class MonitorManager extends AbstractModule implements Listener {
         }
     }
 
-    private List<Player> getAvailablePlayers(@Nullable Player currentTarget) {
+    private List<Player> getAvailablePlayers() {
         long now = System.currentTimeMillis();
         List<Player> players = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
-            if (currentTarget != null && uuid.equals(currentTarget.getUniqueId())) continue;
             if (monitors.containsKey(uuid)) continue;
             if (blackList.contains(player.getName())) continue;
             if (inactiveMills != 0) {
@@ -66,9 +63,6 @@ public class MonitorManager extends AbstractModule implements Listener {
             }
             if (player.hasPermission("sweet.monitor.ignore")) continue;
             players.add(player);
-        }
-        if (currentTarget != null && players.isEmpty()) {
-            return getAvailablePlayers(null);
         }
         return players;
     }
@@ -105,25 +99,42 @@ public class MonitorManager extends AbstractModule implements Listener {
             bar.setTitle(ColorHelper.parseColor(PAPI.setPlaceholders(monitor.player, barEmpty)));
             bar.setProgress(barReversed ? 1.0 : 0.0);
         } else {
-            bar.setTitle(ColorHelper.parseColor(PAPI.setPlaceholders(target, barTitle)));
+            long endTime = monitor.startTime + watchMills;
+            double lastMills = Math.max(0, endTime - System.currentTimeMillis());
+            double mills = Math.max(0, System.currentTimeMillis() - monitor.startTime);
             if (monitor.lastOnePlayer) {
                 bar.setProgress(barReversed ? 1.0 : 0.0);
-            } else if (barReversed) {
-                long endTime = monitor.startTime + watchMills;
-                double lastMills = Math.max(0, endTime - System.currentTimeMillis());
-                bar.setProgress(Math.min(1.0, lastMills / watchMills));
+                bar.setTitle(ColorHelper.parseColor(PAPI.setPlaceholders(target, barLastOne)));
             } else {
-                double mills = Math.max(0, System.currentTimeMillis() - monitor.startTime);
-                bar.setProgress(Math.min(1.0, mills / watchMills));
+                double time = mills / 1000.0;
+                double timeReversed = lastMills / 1000.0;
+                String strTime = String.format("%.1f", time);
+                String strTimeInt = String.format("%d", (int) time);
+                String strTimeReversed = String.format("%.1f", timeReversed);
+                String strTimeReversedInt = String.format("%d", (int) timeReversed);
+                bar.setTitle(ColorHelper.parseColor(PAPI.setPlaceholders(target, barTitle
+                        .replace("%time%", strTime)
+                        .replace("%time_int%", strTimeInt)
+                        .replace("%time_reversed%", strTimeReversed)
+                        .replace("%time_reversed_int%", strTimeReversedInt))));
+                if (barReversed) {
+                    bar.setProgress(Math.min(1.0, lastMills / watchMills));
+                } else {
+                    bar.setProgress(Math.min(1.0, mills / watchMills));
+                }
             }
         }
         bar.setVisible(true);
     }
 
     private void resetTarget(Monitor monitor) {
-        List<Player> players = getAvailablePlayers(monitor.target);
+        List<Player> players = getAvailablePlayers();
         monitor.lastOnePlayer = players.size() <= 1;
-        Player target = random(players);
+        Player oldTarget = monitor.target;
+        if (oldTarget != null) {
+            players.removeIf(it -> it.getUniqueId().equals(oldTarget.getUniqueId()));
+        }
+        Player target = players.isEmpty() ? oldTarget : random(players);
         plugin.getFoliaScheduler().runAtEntity(monitor.player, (t) -> {
             monitor.setTarget(target);
             if (target != null) {
@@ -142,6 +153,7 @@ public class MonitorManager extends AbstractModule implements Listener {
     public void reloadConfig(MemoryConfiguration config) {
         watchMills = (long) Math.max(0, config.getDouble("monitor.watch-seconds-per-player") * 1000L);
         barTitle = config.getString("monitor.camera-bossbar.title", "");
+        barLastOne = config.getString("monitor.camera-bossbar.last-one", "");
         barEmpty = config.getString("monitor.camera-bossbar.empty", "");
         barColor = Util.valueOr(BarColor.class, config.getString("monitor.camera-bossbar.color"), BarColor.WHITE);
         barStyle = Util.valueOr(BarStyle.class, config.getString("monitor.camera-bossbar.style"), BarStyle.SOLID);
@@ -176,7 +188,7 @@ public class MonitorManager extends AbstractModule implements Listener {
             markActive(e.getPlayer());
         }
         for (Monitor monitor : monitors.values()) {
-            if (getAvailablePlayers(monitor.target).size() > 1) {
+            if (getAvailablePlayers().size() > 1) {
                 monitor.startTime = System.currentTimeMillis();
                 monitor.lastOnePlayer = false;
             } else {
