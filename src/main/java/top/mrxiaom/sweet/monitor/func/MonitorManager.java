@@ -106,7 +106,9 @@ public class MonitorManager extends AbstractModule implements Listener {
             bar.setProgress(barReversed ? 1.0 : 0.0);
         } else {
             bar.setTitle(ColorHelper.parseColor(PAPI.setPlaceholders(target, barTitle)));
-            if (barReversed) {
+            if (monitor.lastOnePlayer) {
+                bar.setProgress(barReversed ? 1.0 : 0.0);
+            } else if (barReversed) {
                 long endTime = monitor.startTime + watchMills;
                 double lastMills = Math.max(0, endTime - System.currentTimeMillis());
                 bar.setProgress(Math.min(1.0, lastMills / watchMills));
@@ -119,7 +121,9 @@ public class MonitorManager extends AbstractModule implements Listener {
     }
 
     private void resetTarget(Monitor monitor) {
-        Player target = random(getAvailablePlayers(monitor.target));
+        List<Player> players = getAvailablePlayers(monitor.target);
+        monitor.lastOnePlayer = players.size() <= 1;
+        Player target = random(players);
         plugin.getFoliaScheduler().runAtEntity(monitor.player, (t) -> {
             monitor.setTarget(target);
             if (target != null) {
@@ -170,6 +174,14 @@ public class MonitorManager extends AbstractModule implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         if (inactiveMills != 0) {
             markActive(e.getPlayer());
+        }
+        for (Monitor monitor : monitors.values()) {
+            if (getAvailablePlayers(monitor.target).size() > 1) {
+                monitor.startTime = System.currentTimeMillis();
+                monitor.lastOnePlayer = false;
+            } else {
+                monitor.lastOnePlayer = true;
+            }
         }
     }
 

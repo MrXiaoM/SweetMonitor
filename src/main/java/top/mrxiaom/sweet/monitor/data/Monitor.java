@@ -20,6 +20,7 @@ public class Monitor {
     public final BossBar bossBar;
     public @Nullable Player target;
     public long startTime = System.currentTimeMillis();
+    public boolean lastOnePlayer = false;
 
     public Monitor(SweetMonitor plugin, Player player) {
         this.plugin = plugin;
