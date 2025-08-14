@@ -17,6 +17,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.api.IRunTask;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ColorHelper;
 import top.mrxiaom.pluginbase.utils.PAPI;
@@ -41,9 +42,9 @@ public class MonitorManager extends AbstractModule implements Listener {
     private BarStyle barStyle;
     private boolean barReversed;
     private long inactiveMills;
+    private IRunTask timerTask;
     public MonitorManager(SweetMonitor plugin) {
         super(plugin);
-        plugin.getScheduler().runTaskTimer(this::update, 20L, 5L);
         registerEvents();
         for (Player player : Bukkit.getOnlinePlayers()) {
             markActive(player);
@@ -152,6 +153,12 @@ public class MonitorManager extends AbstractModule implements Listener {
                 }
             }
         }
+
+        if (timerTask != null) {
+            timerTask.cancel();
+        }
+        int timerInterval = Math.max(1, config.getInt("monitor.timer-interval", 1));
+        timerTask = plugin.getScheduler().runTaskTimer(this::update, 1L, timerInterval);
     }
 
     @EventHandler

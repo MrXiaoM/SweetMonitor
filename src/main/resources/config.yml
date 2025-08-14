@@ -1,5 +1,7 @@
 # 玩家监控设置
 monitor:
+  # 定时器检查周期 (tick)，数值越小，BOSS 血条更新越流畅
+  timer-interval: 5
   # 每个玩家的观察时间 (秒)
   watch-seconds-per-player: 10.0
   # BOSS 血条设置，将 title 选项注释或留空，则关闭 BOSS 血条功能
