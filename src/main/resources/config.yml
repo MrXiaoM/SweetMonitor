@@ -1,7 +1,7 @@
 # 玩家监控设置
 monitor:
   # 定时器检查周期 (tick)，数值越小，BOSS 血条更新越流畅
-  timer-interval: 5
+  timer-interval: 2
   # 在玩家切换世界后多久 (tick)，再设置玩家的旁观目标
   # 如果在玩家传送到另一个世界后旁观者模式有问题，请将这个数值调大
   teleport-delay: 5
