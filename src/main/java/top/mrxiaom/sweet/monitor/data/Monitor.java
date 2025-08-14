@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 public class Monitor {
     public final Location oldLocation;
     public final GameMode oldGameMode;
+    public final boolean oldFlying;
     public final Player player;
     public final BossBar bossBar;
     public @Nullable Player target;
@@ -22,6 +23,7 @@ public class Monitor {
         this.player = player;
         this.oldLocation = player.getLocation();
         this.oldGameMode = player.getGameMode();
+        this.oldFlying = player.isFlying();
         this.bossBar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
         this.bossBar.addPlayer(player);
         this.bossBar.setVisible(false);
@@ -33,6 +35,7 @@ public class Monitor {
         }
         player.teleport(oldLocation);
         player.setGameMode(oldGameMode);
+        player.setFlying(oldFlying);
     }
 
     public void setTarget(Player target) {
