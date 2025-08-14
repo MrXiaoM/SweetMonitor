@@ -45,6 +45,9 @@ public class MonitorManager extends AbstractModule implements Listener {
         super(plugin);
         plugin.getScheduler().runTaskTimer(this::update, 20L, 5L);
         registerEvents();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            markActive(player);
+        }
     }
 
     private List<Player> getAvailablePlayers(@Nullable Player currentTarget) {
