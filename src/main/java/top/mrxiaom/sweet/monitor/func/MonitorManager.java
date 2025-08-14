@@ -194,11 +194,13 @@ public class MonitorManager extends AbstractModule implements Listener {
     public void onGameModeChanged(PlayerGameModeChangeEvent e) {
         if (!e.getNewGameMode().equals(GameMode.SPECTATOR)) {
             Player player = e.getPlayer();
-            List<MetadataValue> list = player.getMetadata("SWEET_MONITOR_FLAG");
-            long time = list.isEmpty() ? 0L : list.get(0).asLong();
-            if (System.currentTimeMillis() - time > 3333L) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 1200, 1, false, false));
-                leaveMonitor(player, false);
+            if (isInMonitor(player)) {
+                List<MetadataValue> list = player.getMetadata("SWEET_MONITOR_FLAG");
+                long time = list.isEmpty() ? 0L : list.get(0).asLong();
+                if (System.currentTimeMillis() - time > 3333L) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 1200, 1, false, false));
+                    leaveMonitor(player, false);
+                }
             }
         }
     }
