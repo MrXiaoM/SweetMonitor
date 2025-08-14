@@ -8,7 +8,21 @@ monitor:
     empty: '&f暂无可视奸的玩家'
     color: WHITE
     style: SOLID
+    # 进度是否反向
+    # true  -- 血条随时间递减
+    # false -- 血条随时间递增
     reversed: true
   # 指定玩家不会被视奸
   blacklist:
     - Herobrine
+  # 在一段时间内不活跃的玩家，不会被视奸
+  ignore-inactive:
+    # 在玩家执行什么操作的时候，视为活跃
+    # 默认为 移动、攻击、挥动手臂
+    enable:
+      - MOVE
+      - ATTACK
+      - ANIMATION
+    # 需要设定的时间 (秒)
+    # 设为 0 则关闭该功能
+    seconds: 300.0

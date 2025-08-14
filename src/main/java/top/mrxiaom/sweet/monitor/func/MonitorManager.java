@@ -8,12 +8,16 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ColorHelper;
 import top.mrxiaom.pluginbase.utils.PAPI;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.monitor.SweetMonitor;
+import top.mrxiaom.sweet.monitor.data.ActiveType;
 import top.mrxiaom.sweet.monitor.data.Monitor;
 
 import java.util.*;
@@ -23,12 +27,15 @@ public class MonitorManager extends AbstractModule implements Listener {
     private final Map<UUID, Monitor> monitors = new HashMap<>();
     private final Map<UUID, Monitor> monitorsByTarget = new HashMap<>();
     private final Set<String> blackList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<UUID, Long> inactiveStartTime = new HashMap<>();
+    private final Set<ActiveType> inactiveEnable = new HashSet<>();
     private long watchMills;
     private String barTitle;
     private String barEmpty;
     private BarColor barColor;
     private BarStyle barStyle;
     private boolean barReversed;
+    private long inactiveMills;
     public MonitorManager(SweetMonitor plugin) {
         super(plugin);
         plugin.getScheduler().runTaskTimer(this::update, 20L, 5L);
@@ -36,10 +43,16 @@ public class MonitorManager extends AbstractModule implements Listener {
     }
 
     private List<Player> getAvailablePlayers() {
+        long now = System.currentTimeMillis();
         List<Player> players = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (monitors.containsKey(player.getUniqueId())) continue;
+            UUID uuid = player.getUniqueId();
+            if (monitors.containsKey(uuid)) continue;
             if (blackList.contains(player.getName())) continue;
+            if (inactiveMills != 0) {
+                long lastActive = inactiveStartTime.getOrDefault(uuid, now);
+                if (lastActive + inactiveMills < now) continue;
+            }
             players.add(player);
         }
         return players;
@@ -103,7 +116,7 @@ public class MonitorManager extends AbstractModule implements Listener {
 
     @Override
     public void reloadConfig(MemoryConfiguration config) {
-        watchMills = (long) (config.getDouble("monitor.watch-seconds-per-player") * 1000L);
+        watchMills = (long) Math.max(0, config.getDouble("monitor.watch-seconds-per-player") * 1000L);
         barTitle = config.getString("monitor.camera-bossbar.title", "");
         barEmpty = config.getString("monitor.camera-bossbar.empty", "");
         barColor = Util.valueOr(BarColor.class, config.getString("monitor.camera-bossbar.color"), BarColor.WHITE);
@@ -112,6 +125,42 @@ public class MonitorManager extends AbstractModule implements Listener {
 
         blackList.clear();
         blackList.addAll(config.getStringList("monitor.blacklist"));
+
+        inactiveMills = (long) Math.max(0, config.getDouble("monitor.ignore-inactive.seconds") * 1000L);
+        inactiveEnable.clear();
+        if (inactiveMills != 0) {
+            for (String s : config.getStringList("monitor.ignore-inactive.enable")) {
+                ActiveType activeType = Util.valueOr(ActiveType.class, s, null);
+                if (activeType != null) {
+                    inactiveEnable.add(activeType);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerAnimation(PlayerAnimationEvent e) {
+        if (inactiveEnable.contains(ActiveType.ANIMATION)) {
+            markActive(e.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerAttack(EntityDamageByEntityEvent e) {
+        if (e.getEntity() instanceof Player && inactiveEnable.contains(ActiveType.ATTACK)) {
+            markActive((Player) e.getEntity());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent e) {
+        if (inactiveEnable.contains(ActiveType.MOVE)) {
+            markActive(e.getPlayer());
+        }
+    }
+
+    public void markActive(Player player) {
+        inactiveStartTime.put(player.getUniqueId(), System.currentTimeMillis());
     }
 
     @EventHandler
