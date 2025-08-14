@@ -11,6 +11,12 @@
 > 1.14.1 | pre1 | 按 F3+Esc 现在可以暂停而不显示暂停菜单（如果允许暂停）。  
 > —— Minecraft Wiki [调试屏幕](https://zh.minecraft.wiki/w/%E8%B0%83%E8%AF%95%E5%B1%8F%E5%B9%95#%E5%8E%86%E5%8F%B2)
 
+## 推荐模组
+
+为客户端添加以下部分模组，体验更佳
++ [Better Third Person](https://www.mcmod.cn/class/3492.html) 更好的第三人称视角
++ [Shoulder Surfing Reloaded](https://www.mcmod.cn/class/3305.html) 越肩视角
+
 ## 命令
 
 根命令为 `/sweetmonitor`，别名为 `/smonitor` 或 `/monitor`。  
