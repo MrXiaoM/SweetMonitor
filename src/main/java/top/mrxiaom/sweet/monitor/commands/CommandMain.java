@@ -10,7 +10,9 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
+import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
+import top.mrxiaom.sweet.monitor.Messages;
 import top.mrxiaom.sweet.monitor.SweetMonitor;
 import top.mrxiaom.sweet.monitor.func.AbstractModule;
 import top.mrxiaom.sweet.monitor.func.MonitorManager;
@@ -32,29 +34,31 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             if (args.length == 2) {
                 player = Util.getOnlinePlayer(args[1]).orElse(null);
                 if (player == null) {
-                    return t(sender, "&e玩家不在线 (或不存在)");
+                    return Messages.player__not_online.t(sender);
                 }
             } else {
                 if (sender instanceof Player) {
                     player = (Player) sender;
                     self = true;
                 } else {
-                    return t(sender, "&c只有玩家才能执行该命令");
+                    return Messages.player__only.t(sender);
                 }
             }
             MonitorManager manager = MonitorManager.inst();
             if (manager.isInMonitor(player)) {
                 if (self) {
-                    return t(sender, "&e你已经在视奸了");
+                    return Messages.command__enter__already__self.t(sender);
                 } else {
-                    return t(sender, "&e玩家 " + player.getName() + " 已经在视奸了");
+                    return Messages.command__enter__already__other.t(sender,
+                            Pair.of("%player%", player.getName()));
                 }
             }
             plugin.getScheduler().runTask(() -> manager.enterMonitor(player));
             if (self) {
-                return t(sender, "&a你已进入视奸状态");
+                return Messages.command__enter__success__self.t(sender);
             } else {
-                return t(sender, "&a玩家&e " + player.getName() + " &a已进入视奸状态");
+                return Messages.command__enter__success__other.t(sender,
+                        Pair.of("%player%", player.getName()));
             }
         }
         if (args.length >= 1 && "leave".equalsIgnoreCase(args[0]) && sender.isOp()) {
@@ -70,35 +74,37 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             if (args.length == 2 && !args[1].equals("-k") && !args[1].equals("--k")) {
                 player = Util.getOnlinePlayer(args[1]).orElse(null);
                 if (player == null) {
-                    return t(sender, "&e玩家不在线 (或不存在)");
+                    return Messages.player__not_online.t(sender);
                 }
             } else {
                 if (sender instanceof Player) {
                     player = (Player) sender;
                     self = true;
                 } else {
-                    return t(sender, "&c只有玩家才能执行该命令");
+                    return Messages.player__only.t(sender);
                 }
             }
             MonitorManager manager = MonitorManager.inst();
             if (!manager.isInMonitor(player)) {
                 if (self) {
-                    return t(sender, "&e你没有在视奸");
+                    return Messages.command__leave__none__self.t(sender);
                 } else {
-                    return t(sender, "&e玩家 " + player.getName() + " 没有在视奸");
+                    return Messages.command__leave__none__other.t(sender,
+                            Pair.of("%player%", player.getName()));
                 }
             }
             boolean restore = !keepLocation;
             plugin.getScheduler().runTask(() -> manager.leaveMonitor(player, restore));
             if (self) {
-                return t(sender, "&a你已离开视奸状态");
+                return Messages.command__leave__success__self.t(sender);
             } else {
-                return t(sender, "&a玩家&e " + player.getName() + " &a已离开视奸状态");
+                return Messages.command__leave__success__other.t(sender,
+                        Pair.of("%player%", player.getName()));
             }
         }
         if (args.length == 1 && "reload".equalsIgnoreCase(args[0]) && sender.isOp()) {
             plugin.reloadConfig();
-            return t(sender, "&a配置文件已重载");
+            return Messages.command__reload.t(sender);
         }
         return true;
     }
