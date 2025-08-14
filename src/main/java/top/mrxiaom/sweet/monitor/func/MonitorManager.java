@@ -16,6 +16,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ColorHelper;
 import top.mrxiaom.pluginbase.utils.PAPI;
@@ -46,11 +47,12 @@ public class MonitorManager extends AbstractModule implements Listener {
         registerEvents();
     }
 
-    private List<Player> getAvailablePlayers() {
+    private List<Player> getAvailablePlayers(@Nullable Player currentTarget) {
         long now = System.currentTimeMillis();
         List<Player> players = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
+            if (currentTarget != null && uuid.equals(currentTarget.getUniqueId())) continue;
             if (monitors.containsKey(uuid)) continue;
             if (blackList.contains(player.getName())) continue;
             if (inactiveMills != 0) {
@@ -59,6 +61,9 @@ public class MonitorManager extends AbstractModule implements Listener {
             }
             if (player.hasPermission("sweet.monitor.ignore")) continue;
             players.add(player);
+        }
+        if (currentTarget != null && players.isEmpty()) {
+            return getAvailablePlayers(null);
         }
         return players;
     }
@@ -106,7 +111,7 @@ public class MonitorManager extends AbstractModule implements Listener {
     }
 
     private void resetTarget(Monitor monitor) {
-        Player target = random(getAvailablePlayers());
+        Player target = random(getAvailablePlayers(monitor.target));
         monitor.setTarget(target);
         if (target != null) {
             monitorsByTarget.put(target.getUniqueId(), monitor);
