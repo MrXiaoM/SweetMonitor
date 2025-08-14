@@ -120,10 +120,12 @@ public class MonitorManager extends AbstractModule implements Listener {
 
     private void resetTarget(Monitor monitor) {
         Player target = random(getAvailablePlayers(monitor.target));
-        monitor.setTarget(target);
-        if (target != null) {
-            monitorsByTarget.put(target.getUniqueId(), monitor);
-        }
+        plugin.getFoliaScheduler().runAtEntity(monitor.player, (t) -> {
+            monitor.setTarget(target);
+            if (target != null) {
+                monitorsByTarget.put(target.getUniqueId(), monitor);
+            }
+        });
     }
 
     private void switchNewTarget(Monitor monitor) {
@@ -224,13 +226,13 @@ public class MonitorManager extends AbstractModule implements Listener {
         Player player = e.getPlayer();
         Monitor byTarget = monitorsByTarget.get(player.getUniqueId());
         if (byTarget != null) {
-            byTarget.setTarget(player);
+            plugin.getFoliaScheduler().runAtEntity(byTarget.player, (t) -> byTarget.setTarget(player));
             return;
         }
         Monitor monitor = monitors.get(player.getUniqueId());
         if (monitor != null) {
             player.setGameMode(GameMode.SPECTATOR);
-            plugin.getScheduler().runTaskLater(() -> {
+            plugin.getFoliaScheduler().runAtEntityLater(monitor.player, (t) -> {
                 player.setSpectatorTarget(null);
                 player.setSpectatorTarget(monitor.target);
             }, teleportDelay);
@@ -263,7 +265,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         if (byTarget != null) {
             switchNewTarget(byTarget);
         }
-        Monitor monitor = new Monitor(player);
+        Monitor monitor = new Monitor(plugin, player);
         monitors.put(uuid, monitor);
         player.setGameMode(GameMode.SPECTATOR);
     }
@@ -284,7 +286,7 @@ public class MonitorManager extends AbstractModule implements Listener {
             if (restore) {
                 monitor.restore();
             } else {
-                monitor.setTarget(null);
+                plugin.getFoliaScheduler().runAtEntity(monitor.player, (t) -> monitor.setTarget(null));
             }
         }
     }

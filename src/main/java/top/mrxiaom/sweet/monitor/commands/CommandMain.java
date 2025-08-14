@@ -50,7 +50,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                     return t(sender, "&e玩家 " + player.getName() + " 已经在视奸了");
                 }
             }
-            manager.enterMonitor(player);
+            plugin.getScheduler().runTask(() -> manager.enterMonitor(player));
             if (self) {
                 return t(sender, "&a你已进入视奸状态");
             } else {
@@ -88,7 +88,8 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                     return t(sender, "&e玩家 " + player.getName() + " 没有在视奸");
                 }
             }
-            manager.leaveMonitor(player, !keepLocation);
+            boolean restore = !keepLocation;
+            plugin.getScheduler().runTask(() -> manager.leaveMonitor(player, restore));
             if (self) {
                 return t(sender, "&a你已离开视奸状态");
             } else {

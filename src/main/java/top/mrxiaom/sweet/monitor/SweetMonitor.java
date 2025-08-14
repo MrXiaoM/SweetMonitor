@@ -1,5 +1,7 @@
 package top.mrxiaom.sweet.monitor;
         
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.impl.PlatformScheduler;
 import top.mrxiaom.pluginbase.BukkitPlugin;
 import top.mrxiaom.pluginbase.utils.scheduler.FoliaLibScheduler;
 
@@ -8,6 +10,7 @@ public class SweetMonitor extends BukkitPlugin {
         return (SweetMonitor) BukkitPlugin.getInstance();
     }
 
+    FoliaLib foliaLib;
     public SweetMonitor() {
         super(options()
                 .bungee(false)
@@ -16,7 +19,13 @@ public class SweetMonitor extends BukkitPlugin {
                 .reconnectDatabaseWhenReloadConfig(false)
                 .scanIgnore("top.mrxiaom.sweet.monitor.libs")
         );
-        this.scheduler = new FoliaLibScheduler(this);
+        FoliaLibScheduler scheduler = new FoliaLibScheduler(this);
+        this.scheduler = scheduler;
+        this.foliaLib = scheduler.getFoliaLib();
+    }
+
+    public PlatformScheduler getFoliaScheduler() {
+        return foliaLib.getScheduler();
     }
 
     @Override

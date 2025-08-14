@@ -9,8 +9,10 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.sweet.monitor.SweetMonitor;
 
 public class Monitor {
+    public final SweetMonitor plugin;
     public final Location oldLocation;
     public final GameMode oldGameMode;
     public final boolean oldFlying;
@@ -19,7 +21,8 @@ public class Monitor {
     public @Nullable Player target;
     public long startTime = System.currentTimeMillis();
 
-    public Monitor(Player player) {
+    public Monitor(SweetMonitor plugin, Player player) {
+        this.plugin = plugin;
         this.player = player;
         this.oldLocation = player.getLocation();
         this.oldGameMode = player.getGameMode();
@@ -33,7 +36,7 @@ public class Monitor {
         if (player.getGameMode().equals(GameMode.SPECTATOR)) {
             player.setSpectatorTarget(null);
         }
-        player.teleport(oldLocation);
+        plugin.getFoliaScheduler().teleportAsync(player, oldLocation);
         player.setGameMode(oldGameMode);
         player.setFlying(oldFlying);
     }
@@ -44,7 +47,7 @@ public class Monitor {
         if (target != null) {
             World world = target.getWorld();
             if (!player.getWorld().getName().equals(world.getName())) {
-                player.teleport(target.getLocation());
+                plugin.getFoliaScheduler().teleportAsync(player, target.getLocation());
                 player.setGameMode(GameMode.SPECTATOR);
             } else {
                 player.setGameMode(GameMode.SPECTATOR);
