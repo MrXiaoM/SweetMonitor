@@ -149,22 +149,29 @@ public class MonitorManager extends AbstractModule implements Listener {
     }
 
     @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        if (inactiveMills != 0) {
+            markActive(e.getPlayer());
+        }
+    }
+
+    @EventHandler
     public void onPlayerAnimation(PlayerAnimationEvent e) {
-        if (inactiveEnable.contains(ActiveType.ANIMATION)) {
+        if (inactiveMills != 0 && inactiveEnable.contains(ActiveType.ANIMATION)) {
             markActive(e.getPlayer());
         }
     }
 
     @EventHandler
     public void onPlayerAttack(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof Player && inactiveEnable.contains(ActiveType.ATTACK)) {
+        if (inactiveMills != 0 && e.getEntity() instanceof Player && inactiveEnable.contains(ActiveType.ATTACK)) {
             markActive((Player) e.getEntity());
         }
     }
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
-        if (inactiveEnable.contains(ActiveType.MOVE)) {
+        if (inactiveMills != 0 && inactiveEnable.contains(ActiveType.MOVE)) {
             markActive(e.getPlayer());
         }
     }
