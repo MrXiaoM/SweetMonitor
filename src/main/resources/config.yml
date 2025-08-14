@@ -4,7 +4,7 @@ monitor:
   watch-seconds-per-player: 10.0
   # BOSS 血条设置，将 title 选项注释或留空，则关闭 BOSS 血条功能
   camera-bossbar:
-    title: '&f正在视奸&e %player_name%'
+    title: '&c👁 &f正在视奸&e %player_name% &c👁'
     empty: '&f暂无可视奸的玩家'
     color: WHITE
     style: SOLID
