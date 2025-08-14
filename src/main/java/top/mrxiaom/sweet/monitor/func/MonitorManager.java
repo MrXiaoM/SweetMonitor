@@ -53,6 +53,7 @@ public class MonitorManager extends AbstractModule implements Listener {
                 long lastActive = inactiveStartTime.getOrDefault(uuid, now);
                 if (lastActive + inactiveMills < now) continue;
             }
+            if (player.hasPermission("sweet.monitor.ignore")) continue;
             players.add(player);
         }
         return players;
