@@ -32,6 +32,7 @@ public class MonitorManager extends AbstractModule implements Listener {
     private final Map<UUID, Monitor> monitors = new HashMap<>();
     private final Map<UUID, Monitor> monitorsByTarget = new HashMap<>();
     private final Set<String> blackList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<String> whiteList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<UUID, Long> inactiveStartTime = new HashMap<>();
     private final Set<ActiveType> inactiveEnable = new HashSet<>();
     private long watchMills;
@@ -55,8 +56,15 @@ public class MonitorManager extends AbstractModule implements Listener {
         List<Player> players = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
+            String name = player.getName();
             if (monitors.containsKey(uuid)) continue;
-            if (blackList.contains(player.getName())) continue;
+            if (blackList.contains(name)) continue;
+            if (!whiteList.isEmpty()) {
+                if (whiteList.contains(name)) {
+                    players.add(player);
+                }
+                continue;
+            }
             if (inactiveMills != 0) {
                 long lastActive = inactiveStartTime.getOrDefault(uuid, now);
                 if (lastActive + inactiveMills < now) continue;
@@ -159,9 +167,6 @@ public class MonitorManager extends AbstractModule implements Listener {
         barStyle = Util.valueOr(BarStyle.class, config.getString("monitor.camera-bossbar.style"), BarStyle.SOLID);
         barReversed = config.getBoolean("monitor.camera-bossbar.reversed", true);
 
-        blackList.clear();
-        blackList.addAll(config.getStringList("monitor.blacklist"));
-
         inactiveMills = (long) Math.max(0, config.getDouble("monitor.ignore-inactive.seconds") * 1000L);
         inactiveEnable.clear();
         if (inactiveMills != 0) {
@@ -171,6 +176,15 @@ public class MonitorManager extends AbstractModule implements Listener {
                     inactiveEnable.add(activeType);
                 }
             }
+        }
+
+        blackList.clear();
+        blackList.addAll(config.getStringList("monitor.blacklist"));
+
+        whiteList.clear();
+        whiteList.addAll(config.getStringList("monitor.whitelist"));
+        if (!whiteList.isEmpty()) {
+            inactiveMills = 0L;
         }
 
         if (timerTask != null) {

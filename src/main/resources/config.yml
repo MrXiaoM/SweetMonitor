@@ -30,6 +30,9 @@ monitor:
   # 指定玩家不会被视奸
   blacklist:
     - Herobrine
+  # 只有指定玩家会被视奸，留空则不开启该功能
+  # 开启该功能会禁用下方的不活跃检查功能，也会禁用权限检查功能，但 blacklist 依然会生效
+  whitelist: []
   # 在一段时间内不活跃的玩家，不会被视奸
   ignore-inactive:
     # 在玩家执行什么操作的时候，视为活跃
