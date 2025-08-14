@@ -1,0 +1,11 @@
+name: SweetMonitor
+version: '${version}'
+main: top.mrxiaom.sweet.monitor.SweetMonitor
+api-version: 1.13
+softdepend:
+  - PlaceholderAPI
+authors: [ MrXiaoM ]
+commands:
+  sweetmonitor:
+    description: 'The main command of SweetMonitor'
+    aliases: [ smonitor, monitor ]
