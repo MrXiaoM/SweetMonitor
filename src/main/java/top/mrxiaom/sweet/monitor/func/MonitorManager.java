@@ -72,7 +72,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         long now = System.currentTimeMillis();
         for (Monitor monitor : monitors.values()) {
             long endTime = monitor.startTime + watchMills;
-            if (now > endTime || monitor.target == null) {
+            if (now > endTime || monitor.target == null || !monitor.target.isOnline()) {
                 monitor.startTime = now;
                 resetTarget(monitor);
             }
