@@ -1,7 +1,7 @@
 # 玩家监控设置
 monitor:
   # 每个玩家的观察时间 (秒)
-  watch-seconds-per-player: 30.0
+  watch-seconds-per-player: 10.0
   # BOSS 血条设置，将 title 选项注释或留空，则关闭 BOSS 血条功能
   camera-bossbar:
     title: '&f正在视奸&e %player_name%'
