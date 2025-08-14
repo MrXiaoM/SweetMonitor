@@ -43,6 +43,7 @@ public class MonitorManager extends AbstractModule implements Listener {
     private boolean barReversed;
     private long inactiveMills;
     private IRunTask timerTask;
+    private int teleportDelay;
     public MonitorManager(SweetMonitor plugin) {
         super(plugin);
         registerEvents();
@@ -159,6 +160,8 @@ public class MonitorManager extends AbstractModule implements Listener {
         }
         int timerInterval = Math.max(1, config.getInt("monitor.timer-interval", 1));
         timerTask = plugin.getScheduler().runTaskTimer(this::update, 1L, timerInterval);
+
+        teleportDelay = Math.max(1, config.getInt("monitor.teleport-delay"));
     }
 
     @EventHandler
@@ -201,6 +204,7 @@ public class MonitorManager extends AbstractModule implements Listener {
             switchNewTarget(byTarget);
         }
         leaveMonitor(player);
+        player.removeMetadata("SWEET_MONITOR_FLAG", plugin);
     }
 
     @EventHandler
@@ -229,7 +233,7 @@ public class MonitorManager extends AbstractModule implements Listener {
             plugin.getScheduler().runTaskLater(() -> {
                 player.setSpectatorTarget(null);
                 player.setSpectatorTarget(monitor.target);
-            }, 5L);
+            }, teleportDelay);
         }
     }
 
@@ -301,6 +305,9 @@ public class MonitorManager extends AbstractModule implements Listener {
             monitor.setTarget(null);
         }
         monitors.clear();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.removeMetadata("SWEET_MONITOR_FLAG", plugin);
+        }
     }
 
     public static MonitorManager inst() {
