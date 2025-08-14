@@ -80,6 +80,9 @@ public class MonitorManager extends AbstractModule implements Listener {
                 monitor.startTime = now;
                 resetTarget(monitor);
             }
+            if (monitor.target != null && monitor.player.getGameMode().equals(GameMode.SPECTATOR)) {
+                monitor.player.setSpectatorTarget(monitor.target);
+            }
             updateBossBar(monitor);
         }
     }
@@ -202,6 +205,24 @@ public class MonitorManager extends AbstractModule implements Listener {
         Player player = e.getPlayer();
         if (monitors.containsKey(player.getUniqueId())) {
             player.setMetadata("SWEET_MONITOR_FLAG", new FixedMetadataValue(plugin, System.currentTimeMillis()));
+        }
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent e) {
+        Player player = e.getPlayer();
+        Monitor byTarget = monitorsByTarget.get(player.getUniqueId());
+        if (byTarget != null) {
+            byTarget.setTarget(player);
+            return;
+        }
+        Monitor monitor = monitors.get(player.getUniqueId());
+        if (monitor != null) {
+            player.setGameMode(GameMode.SPECTATOR);
+            plugin.getScheduler().runTaskLater(() -> {
+                player.setSpectatorTarget(null);
+                player.setSpectatorTarget(monitor.target);
+            }, 5L);
         }
     }
 

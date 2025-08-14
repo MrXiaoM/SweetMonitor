@@ -41,10 +41,16 @@ public class Monitor {
         if (target != null) {
             World world = target.getWorld();
             if (!player.getWorld().getName().equals(world.getName())) {
-                player.teleport(world.getSpawnLocation());
+                player.teleport(target.getLocation());
+                player.setGameMode(GameMode.SPECTATOR);
+            } else {
+                player.setGameMode(GameMode.SPECTATOR);
+                player.setSpectatorTarget(null);
+                player.setSpectatorTarget(target);
             }
+        } else {
+            player.setGameMode(GameMode.SPECTATOR);
+            player.setSpectatorTarget(null);
         }
-        player.setGameMode(GameMode.SPECTATOR);
-        player.setSpectatorTarget(target);
     }
 }
