@@ -81,7 +81,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                 }
             }
             MonitorManager manager = MonitorManager.inst();
-            if (manager.isInMonitor(player)) {
+            if (!manager.isInMonitor(player)) {
                 if (self) {
                     return t(sender, "&e你没有在视奸");
                 } else {
