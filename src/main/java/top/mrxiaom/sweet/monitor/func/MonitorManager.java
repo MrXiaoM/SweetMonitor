@@ -244,6 +244,15 @@ public class MonitorManager extends AbstractModule implements Listener {
         return list.get(new Random().nextInt(size));
     }
 
+    @Override
+    public void onDisable() {
+        watchMills = 0L;
+        for (Monitor monitor : monitors.values()) {
+            monitor.setTarget(null);
+        }
+        monitors.clear();
+    }
+
     public static MonitorManager inst() {
         return instanceOf(MonitorManager.class);
     }
