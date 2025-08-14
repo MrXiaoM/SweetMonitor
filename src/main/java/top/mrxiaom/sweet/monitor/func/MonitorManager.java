@@ -216,6 +216,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         }
         Monitor monitor = new Monitor(player);
         monitors.put(uuid, monitor);
+        player.setGameMode(GameMode.SPECTATOR);
     }
 
     public void leaveMonitor(Player player) {
@@ -229,6 +230,8 @@ public class MonitorManager extends AbstractModule implements Listener {
             if (target != null) {
                 monitorsByTarget.remove(target.getUniqueId());
             }
+            monitor.bossBar.setVisible(false);
+            monitor.bossBar.removeAll();
             if (restore) {
                 monitor.restore();
             } else {
@@ -248,6 +251,8 @@ public class MonitorManager extends AbstractModule implements Listener {
     public void onDisable() {
         watchMills = 0L;
         for (Monitor monitor : monitors.values()) {
+            monitor.bossBar.setVisible(false);
+            monitor.bossBar.removeAll();
             monitor.setTarget(null);
         }
         monitors.clear();
