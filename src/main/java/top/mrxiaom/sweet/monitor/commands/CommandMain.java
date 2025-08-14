@@ -60,7 +60,14 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
         if (args.length >= 1 && "leave".equalsIgnoreCase(args[0]) && sender.isOp()) {
             Player player;
             boolean self = false;
-            if (args.length == 2) {
+            boolean keepLocation = false;
+            for (String arg : args) {
+                if (arg.equals("-k") || arg.equals("--keep")) {
+                    keepLocation = true;
+                    break;
+                }
+            }
+            if (args.length == 2 && !args[1].equals("-k") && !args[1].equals("--k")) {
                 player = Util.getOnlinePlayer(args[1]).orElse(null);
                 if (player == null) {
                     return t(sender, "&e玩家不在线 (或不存在)");
@@ -81,7 +88,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                     return t(sender, "&e玩家 " + player.getName() + " 没有在视奸");
                 }
             }
-            manager.leaveMonitor(player);
+            manager.leaveMonitor(player, !keepLocation);
             if (self) {
                 return t(sender, "&a你已离开视奸状态");
             } else {

@@ -1,6 +1,8 @@
 package top.mrxiaom.sweet.monitor.func;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -9,9 +11,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ColorHelper;
 import top.mrxiaom.pluginbase.utils.PAPI;
@@ -174,6 +178,31 @@ public class MonitorManager extends AbstractModule implements Listener {
         leaveMonitor(player);
     }
 
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent e) {
+        World from = e.getFrom().getWorld();
+        World to = e.getTo() == null ? null : e.getTo().getWorld();
+        if (from == null || to == null) return;
+        if (from.getName().equals(to.getName())) return;
+        Player player = e.getPlayer();
+        if (monitors.containsKey(player.getUniqueId())) {
+            player.setMetadata("SWEET_MONITOR_FLAG", new FixedMetadataValue(plugin, System.currentTimeMillis()));
+        }
+    }
+
+    @EventHandler
+    public void onGameModeChanged(PlayerGameModeChangeEvent e) {
+        if (!e.getNewGameMode().equals(GameMode.SPECTATOR)) {
+            Player player = e.getPlayer();
+            List<MetadataValue> list = player.getMetadata("SWEET_MONITOR_FLAG");
+            long time = list.isEmpty() ? 0L : list.get(0).asLong();
+            if (System.currentTimeMillis() - time > 3333L) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 1200, 1, false, false));
+                leaveMonitor(player, false);
+            }
+        }
+    }
+
     public boolean isInMonitor(Player player) {
         return monitors.containsKey(player.getUniqueId());
     }
@@ -190,9 +219,21 @@ public class MonitorManager extends AbstractModule implements Listener {
     }
 
     public void leaveMonitor(Player player) {
+        leaveMonitor(player, true);
+    }
+
+    public void leaveMonitor(Player player, boolean restore) {
         Monitor monitor = monitors.remove(player.getUniqueId());
         if (monitor != null) {
-            monitor.restore();
+            Player target = monitor.target;
+            if (target != null) {
+                monitorsByTarget.remove(target.getUniqueId());
+            }
+            if (restore) {
+                monitor.restore();
+            } else {
+                monitor.setTarget(null);
+            }
         }
     }
 

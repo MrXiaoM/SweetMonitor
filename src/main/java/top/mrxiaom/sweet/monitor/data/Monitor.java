@@ -28,6 +28,9 @@ public class Monitor {
     }
 
     public void restore() {
+        if (player.getGameMode().equals(GameMode.SPECTATOR)) {
+            player.setSpectatorTarget(null);
+        }
         player.teleport(oldLocation);
         player.setGameMode(oldGameMode);
     }
