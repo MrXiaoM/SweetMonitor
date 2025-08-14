@@ -147,4 +147,8 @@ public class MonitorManager extends AbstractModule implements Listener {
         if (size == 1) return list.get(0);
         return list.get(new Random().nextInt(size));
     }
+
+    public static MonitorManager inst() {
+        return instanceOf(MonitorManager.class);
+    }
 }
