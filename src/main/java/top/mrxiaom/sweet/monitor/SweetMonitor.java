@@ -2,6 +2,8 @@ package top.mrxiaom.sweet.monitor;
         
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import top.mrxiaom.pluginbase.BukkitPlugin;
 import top.mrxiaom.pluginbase.func.LanguageManager;
 import top.mrxiaom.pluginbase.utils.scheduler.FoliaLibScheduler;
@@ -21,6 +23,11 @@ public class SweetMonitor extends BukkitPlugin {
 
     public PlatformScheduler getFoliaScheduler() {
         return foliaLib.getScheduler();
+    }
+
+    public void teleportThen(Entity entity, Location location, Runnable then) {
+        getFoliaScheduler().teleportAsync(entity, location)
+                .thenRun(() -> getFoliaScheduler().runAtEntity(entity, t -> then.run()));
     }
 
     @Override

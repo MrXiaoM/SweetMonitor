@@ -37,9 +37,10 @@ public class Monitor {
         if (player.getGameMode().equals(GameMode.SPECTATOR)) {
             player.setSpectatorTarget(null);
         }
-        plugin.getFoliaScheduler().teleportAsync(player, oldLocation);
-        player.setGameMode(oldGameMode);
-        player.setFlying(oldFlying);
+        plugin.teleportThen(player, oldLocation, () -> {
+            player.setGameMode(oldGameMode);
+            player.setFlying(oldFlying);
+        });
     }
 
     public void setTarget(Player target) {
@@ -47,17 +48,19 @@ public class Monitor {
         this.target = target;
         if (target != null) {
             World world = target.getWorld();
-            if (!player.getWorld().getName().equals(world.getName())) {
-                plugin.getFoliaScheduler().teleportAsync(player, target.getLocation());
-                player.setGameMode(GameMode.SPECTATOR);
-            } else {
-                player.setGameMode(GameMode.SPECTATOR);
-                player.setSpectatorTarget(null);
-                player.setSpectatorTarget(target);
-            }
+            plugin.teleportThen(player, target.getLocation(), () -> doSwitchTarget(target, world));
         } else {
             player.setGameMode(GameMode.SPECTATOR);
             player.setSpectatorTarget(null);
+        }
+    }
+
+    private void doSwitchTarget(Player target, World world) {
+        player.setGameMode(GameMode.SPECTATOR);
+        // 只有在世界相同的时候设置旁观目标，世界不相同时，等待 PlayerChangedWorldEvent 触发再设置目标
+        if (player.getWorld().getName().equals(world.getName())) {
+            player.setSpectatorTarget(null);
+            player.setSpectatorTarget(target);
         }
     }
 }
