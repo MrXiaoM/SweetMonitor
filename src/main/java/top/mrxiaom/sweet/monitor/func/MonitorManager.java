@@ -43,6 +43,7 @@ public class MonitorManager extends AbstractModule implements Listener {
     private long inactiveMills;
     private IRunTask timerTask;
     private int teleportDelay;
+    private boolean debug;
     public MonitorManager(SweetMonitor plugin) {
         super(plugin);
         registerEvents();
@@ -159,6 +160,7 @@ public class MonitorManager extends AbstractModule implements Listener {
 
     @Override
     public void reloadConfig(MemoryConfiguration config) {
+        debug = config.getBoolean("debug", false);
         watchMills = (long) Math.max(0, config.getDouble("monitor.watch-seconds-per-player") * 1000L);
         barTitle = config.getString("monitor.camera-bossbar.title", "");
         barLastOne = config.getString("monitor.camera-bossbar.last-one", "");
@@ -279,6 +281,12 @@ public class MonitorManager extends AbstractModule implements Listener {
 
     @EventHandler
     public void onGameModeChanged(PlayerGameModeChangeEvent e) {
+        if (debug) {
+            Player player = e.getPlayer();
+            GameMode gameMode = e.getNewGameMode();
+            String s = Util.stackTraceToString(new Exception("玩家 " + player + " 切换为 " + gameMode.name() + " 模式，调用堆栈如下"));
+            info(s);
+        }
         if (!e.getNewGameMode().equals(GameMode.SPECTATOR)) {
             Player player = e.getPlayer();
             if (isInMonitor(player)) {
