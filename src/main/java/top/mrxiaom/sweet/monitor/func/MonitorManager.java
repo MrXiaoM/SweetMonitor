@@ -243,7 +243,10 @@ public class MonitorManager extends AbstractModule implements Listener {
         Player player = e.getPlayer();
         Monitor byTarget = monitorsByTarget.remove(player.getUniqueId());
         if (byTarget != null) {
-            switchNewTarget(byTarget);
+            UUID uuid = byTarget.player.getUniqueId();
+            if (monitors.containsKey(uuid)) {
+                switchNewTarget(byTarget);
+            }
         }
         leaveMonitor(player);
         player.removeMetadata("SWEET_MONITOR_FLAG", plugin);
@@ -266,7 +269,10 @@ public class MonitorManager extends AbstractModule implements Listener {
         Player player = e.getPlayer();
         Monitor byTarget = monitorsByTarget.get(player.getUniqueId());
         if (byTarget != null) {
-            plugin.getFoliaScheduler().runAtEntity(byTarget.player, (t) -> byTarget.setTarget(player));
+            UUID uuid = byTarget.player.getUniqueId();
+            if (monitors.containsKey(uuid)) {
+                plugin.getFoliaScheduler().runAtEntity(byTarget.player, (t) -> byTarget.setTarget(player));
+            }
             return;
         }
         Monitor monitor = monitors.get(player.getUniqueId());
