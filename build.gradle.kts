@@ -27,7 +27,7 @@ dependencies {
 
     compileOnly("org.jetbrains:annotations:24.0.0")
     implementation("com.github.technicallycoded:FoliaLib:0.4.4") { isTransitive = false }
-    implementation("top.mrxiaom:PluginBase:1.5.8")
+    implementation("top.mrxiaom.pluginbase:library:1.6.3")
 }
 java {
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
