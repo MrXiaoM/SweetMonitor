@@ -8,6 +8,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.sweet.monitor.SweetMonitor;
 
@@ -48,7 +49,7 @@ public class Monitor {
         this.target = target;
         if (target != null) {
             World world = target.getWorld();
-            plugin.teleportThen(player, target.getLocation(), () -> doSwitchTarget(target, world));
+            plugin.teleportThen(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, () -> doSwitchTarget(target, world));
         } else {
             player.setGameMode(GameMode.SPECTATOR);
             player.setSpectatorTarget(null);
