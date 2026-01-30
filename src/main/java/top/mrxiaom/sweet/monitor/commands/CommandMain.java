@@ -28,10 +28,16 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length >= 1 && "enter".equalsIgnoreCase(args[0]) && sender.isOp()) {
+        if (args.length >= 1 && "enter".equalsIgnoreCase(args[0])) {
+            if (!sender.hasPermission("sweetmonitor.use")) {
+                return Messages.no_permission.tm(sender);
+            }
             Player player;
             boolean self = false;
             if (args.length == 2) {
+                if (!sender.hasPermission("sweetmonitor.use.other")) {
+                    return Messages.no_permission.tm(sender);
+                }
                 player = Util.getOnlinePlayer(args[1]).orElse(null);
                 if (player == null) {
                     return Messages.player__not_online.t(sender);
@@ -62,6 +68,9 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             }
         }
         if (args.length >= 1 && "leave".equalsIgnoreCase(args[0]) && sender.isOp()) {
+            if (!sender.hasPermission("sweetmonitor.use")) {
+                return Messages.no_permission.tm(sender);
+            }
             Player player;
             boolean self = false;
             boolean keepLocation = false;
@@ -72,6 +81,9 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                 }
             }
             if (args.length == 2 && !args[1].equals("-k") && !args[1].equals("--k")) {
+                if (!sender.hasPermission("sweetmonitor.use.other")) {
+                    return Messages.no_permission.tm(sender);
+                }
                 player = Util.getOnlinePlayer(args[1]).orElse(null);
                 if (player == null) {
                     return Messages.player__not_online.t(sender);

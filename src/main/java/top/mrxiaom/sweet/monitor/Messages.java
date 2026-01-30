@@ -5,6 +5,7 @@ import top.mrxiaom.pluginbase.func.language.Message;
 import static top.mrxiaom.pluginbase.func.language.LanguageFieldAutoHolder.field;
 
 public class Messages {
+    public static final Message no_permission = field("&c你没有执行此操作的权限");
     public static final Message player__not_online = field("&e玩家不在线 (或不存在)");
     public static final Message player__only = field("&c只有玩家才能执行该命令");
     public static final Message command__enter__already__self = field("&e你已经在视奸了");
