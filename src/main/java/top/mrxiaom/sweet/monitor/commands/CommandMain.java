@@ -121,17 +121,22 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
         return true;
     }
 
-    private static final List<String> listArg0 = Lists.newArrayList();
-    private static final List<String> listOpArg0 = Lists.newArrayList(
-            "enter", "leave", "reload");
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
-            return startsWith(sender.isOp() ? listOpArg0 : listArg0, args[0]);
+            List<String> list = new ArrayList<>();
+            if (sender.hasPermission("sweetmonitor.use.other")) {
+                list.add("enter");
+                list.add("leave");
+            }
+            if (sender.isOp()) {
+                list.add("reload");
+            }
+            return startsWith(list, args[0]);
         }
         if (args.length == 2) {
-            if (sender.isOp()) {
+            if (sender.hasPermission("sweetmonitor.use.other")) {
                 if ("enter".equalsIgnoreCase(args[0]) || "leave".equalsIgnoreCase(args[0])) {
                     return null;
                 }
