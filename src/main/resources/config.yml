@@ -11,6 +11,10 @@ monitor:
   teleport-delay: 5
   # 每个玩家的观察时间 (秒)
   watch-seconds-per-player: 10.0
+  # 是否自动设置观察模式目标为目标玩家
+  auto-set-target: true
+  # 当目标远离自己多远时，自动传送到目标位置，设为0关闭该功能
+  auto-teleport-when-far-away-from: 10
   # BOSS 血条设置，将 title 选项注释或留空，则关闭 BOSS 血条功能
   camera-bossbar:
     # 可用时间变量

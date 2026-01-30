@@ -37,6 +37,8 @@ public class MonitorManager extends AbstractModule implements Listener {
     private final Map<UUID, Long> inactiveStartTime = new HashMap<>();
     private final Set<ActiveType> inactiveEnable = new HashSet<>();
     private long watchMills;
+    private boolean autoSetTarget;
+    private double autoTeleportDistance;
     private String barTitle, barLastOne, barEmpty;
     private BarColor barColor;
     private BarStyle barStyle;
@@ -53,6 +55,10 @@ public class MonitorManager extends AbstractModule implements Listener {
             markActive(player);
         }
         packetManager = getOrNull(PacketManager.class);
+    }
+
+    public boolean isAutoSetTarget() {
+        return autoSetTarget;
     }
 
     private List<Player> getAvailablePlayers() {
@@ -91,19 +97,23 @@ public class MonitorManager extends AbstractModule implements Listener {
             Player player = monitor.player;
             Player target = monitor.target;
             if (target != null && player.getGameMode().equals(GameMode.SPECTATOR)) {
-                Double distance = distance(player, target);
-                if (distance == null || distance > 10) {
-                    plugin.teleportThen(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, () -> {
-                        if (!player.getGameMode().equals(GameMode.SPECTATOR)) {
-                            player.setGameMode(GameMode.SPECTATOR);
-                        }
-                    });
+                if (autoTeleportDistance > 0) {
+                    Double distance = distance(player, target);
+                    if (distance == null || distance > 10) {
+                        plugin.teleportThen(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, () -> {
+                            if (!player.getGameMode().equals(GameMode.SPECTATOR)) {
+                                player.setGameMode(GameMode.SPECTATOR);
+                            }
+                        });
+                    }
                 }
-                if (packetManager != null && --monitor.countDown <= 0) {
-                    monitor.countDown = 20L;
-                    packetManager.setCamera(player, target.getEntityId());
+                if (autoSetTarget) {
+                    if (packetManager != null && --monitor.countDown <= 0) {
+                        monitor.countDown = 20L;
+                        packetManager.setCamera(player, target.getEntityId());
+                    }
+                    player.setSpectatorTarget(target);
                 }
-                player.setSpectatorTarget(target);
             }
             updateBossBar(monitor);
         }
@@ -188,6 +198,8 @@ public class MonitorManager extends AbstractModule implements Listener {
     public void reloadConfig(MemoryConfiguration config) {
         debug = config.getBoolean("debug", false);
         watchMills = (long) Math.max(0, config.getDouble("monitor.watch-seconds-per-player") * 1000L);
+        autoSetTarget = config.getBoolean("monitor.auto-set-target", true);
+        autoTeleportDistance = config.getDouble("monitor.auto-teleport-when-far-away-from", 10.0);
         barTitle = config.getString("monitor.camera-bossbar.title", "");
         barLastOne = config.getString("monitor.camera-bossbar.last-one", "");
         barEmpty = config.getString("monitor.camera-bossbar.empty", "");
@@ -304,10 +316,12 @@ public class MonitorManager extends AbstractModule implements Listener {
         Monitor monitor = monitors.get(player.getUniqueId());
         if (monitor != null) {
             player.setGameMode(GameMode.SPECTATOR);
-            plugin.getFoliaScheduler().runAtEntityLater(monitor.player, (t) -> {
-                player.setSpectatorTarget(null);
-                player.setSpectatorTarget(monitor.target);
-            }, teleportDelay);
+            if (autoSetTarget) {
+                plugin.getFoliaScheduler().runAtEntityLater(monitor.player, (t) -> {
+                    player.setSpectatorTarget(null);
+                    player.setSpectatorTarget(monitor.target);
+                }, teleportDelay);
+            }
         }
     }
 
@@ -343,7 +357,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         if (byTarget != null) {
             switchNewTarget(byTarget);
         }
-        Monitor monitor = new Monitor(plugin, player);
+        Monitor monitor = new Monitor(this, player);
         monitors.put(uuid, monitor);
         player.setGameMode(GameMode.SPECTATOR);
     }

@@ -9,11 +9,14 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.sweet.monitor.SweetMonitor;
+import top.mrxiaom.sweet.monitor.func.MonitorManager;
 
 public class Monitor {
     public final SweetMonitor plugin;
+    public final MonitorManager manager;
     public final Location oldLocation;
     public final GameMode oldGameMode;
     public final boolean oldFlying;
@@ -23,9 +26,10 @@ public class Monitor {
     public long startTime = System.currentTimeMillis();
     public long countDown = 20L;
     public boolean lastOnePlayer = false;
-
-    public Monitor(SweetMonitor plugin, Player player) {
-        this.plugin = plugin;
+    @ApiStatus.Internal
+    public Monitor(MonitorManager manager, Player player) {
+        this.plugin = manager.plugin;
+        this.manager = manager;
         this.player = player;
         this.oldLocation = player.getLocation();
         this.oldGameMode = player.getGameMode();
@@ -59,10 +63,12 @@ public class Monitor {
 
     private void doSwitchTarget(Player target, World world) {
         player.setGameMode(GameMode.SPECTATOR);
-        // 只有在世界相同的时候设置旁观目标，世界不相同时，等待 PlayerChangedWorldEvent 触发再设置目标
-        if (player.getWorld().getName().equals(world.getName())) {
-            player.setSpectatorTarget(null);
-            player.setSpectatorTarget(target);
+        if (manager.isAutoSetTarget()) {
+            // 只有在世界相同的时候设置旁观目标，世界不相同时，等待 PlayerChangedWorldEvent 触发再设置目标
+            if (player.getWorld().getName().equals(world.getName())) {
+                player.setSpectatorTarget(null);
+                player.setSpectatorTarget(target);
+            }
         }
     }
 }
