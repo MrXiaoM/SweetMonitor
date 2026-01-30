@@ -2,6 +2,7 @@ package top.mrxiaom.sweet.monitor.func;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -85,11 +86,30 @@ public class MonitorManager extends AbstractModule implements Listener {
                 monitor.startTime = now;
                 resetTarget(monitor);
             }
-            if (monitor.target != null && monitor.player.getGameMode().equals(GameMode.SPECTATOR)) {
-                monitor.player.setSpectatorTarget(monitor.target);
+            Player player = monitor.player;
+            Player target = monitor.target;
+            if (target != null && player.getGameMode().equals(GameMode.SPECTATOR)) {
+                Double distance = distance(player, target);
+                if (distance == null || distance > 10) {
+                    plugin.teleportThen(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, () -> {
+                        if (!player.getGameMode().equals(GameMode.SPECTATOR)) {
+                            player.setGameMode(GameMode.SPECTATOR);
+                        }
+                    });
+                }
+                player.setSpectatorTarget(target);
             }
             updateBossBar(monitor);
         }
+    }
+
+    private Double distance(Player p1, Player p2) {
+        Location loc1 = p1.getLocation();
+        Location loc2 = p2.getLocation();
+        if (loc1.getWorld() != loc2.getWorld()) {
+            return null;
+        }
+        return loc1.distance(loc2);
     }
 
     private void updateBossBar(Monitor monitor) {
