@@ -4,6 +4,7 @@ main: top.mrxiaom.sweet.monitor.SweetMonitor
 api-version: 1.13
 softdepend:
   - PlaceholderAPI
+  - packetevents
 authors: [ MrXiaoM ]
 folia-supported: true
 commands:

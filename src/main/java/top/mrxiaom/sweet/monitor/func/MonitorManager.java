@@ -45,12 +45,14 @@ public class MonitorManager extends AbstractModule implements Listener {
     private IRunTask timerTask;
     private int teleportDelay;
     private boolean debug;
+    private final PacketManager packetManager;
     public MonitorManager(SweetMonitor plugin) {
         super(plugin);
         registerEvents();
         for (Player player : Bukkit.getOnlinePlayers()) {
             markActive(player);
         }
+        packetManager = getOrNull(PacketManager.class);
     }
 
     private List<Player> getAvailablePlayers() {
@@ -96,6 +98,10 @@ public class MonitorManager extends AbstractModule implements Listener {
                             player.setGameMode(GameMode.SPECTATOR);
                         }
                     });
+                }
+                if (packetManager != null && --monitor.countDown <= 0) {
+                    monitor.countDown = 20L;
+                    packetManager.setCamera(player, target.getEntityId());
                 }
                 player.setSpectatorTarget(target);
             }

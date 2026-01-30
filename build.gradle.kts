@@ -24,6 +24,7 @@ dependencies {
     // compileOnly("org.spigotmc:spigot:1.20") // NMS
 
     compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.9.5")
 
     compileOnly("org.jetbrains:annotations:24.0.0")
     implementation("com.github.technicallycoded:FoliaLib:0.4.4") { isTransitive = false }

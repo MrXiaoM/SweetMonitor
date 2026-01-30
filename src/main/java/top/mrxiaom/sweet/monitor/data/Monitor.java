@@ -21,6 +21,7 @@ public class Monitor {
     public final BossBar bossBar;
     public @Nullable Player target;
     public long startTime = System.currentTimeMillis();
+    public long countDown = 20L;
     public boolean lastOnePlayer = false;
 
     public Monitor(SweetMonitor plugin, Player player) {
