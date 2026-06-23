@@ -1,12 +1,22 @@
+import top.mrxiaom.gradle.LibraryHelper
+
 plugins {
     java
     `maven-publish`
-    id ("com.gradleup.shadow") version "8.3.0"
+    id ("com.gradleup.shadow") version "9.3.0"
+    id ("com.github.gmazzo.buildconfig") version "5.6.7"
 }
+
+buildscript {
+    repositories.mavenCentral()
+    dependencies.classpath("top.mrxiaom:LibrariesResolver-Gradle:1.7.27")
+}
+val base = LibraryHelper(project)
 
 group = "top.mrxiaom.sweet.monitor"
 version = "1.0.2"
 val targetJavaVersion = 8
+val pluginBaseModules = base.modules.run{ listOf(library, paper, actions, l10n) }
 val shadowGroup = "top.mrxiaom.sweet.monitor.libs"
 
 repositories {
@@ -21,61 +31,43 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20-R0.1-SNAPSHOT")
+    compileOnly(base.depend.annotations)
     // compileOnly("org.spigotmc:spigot:1.20") // NMS
 
-    compileOnly("me.clip:placeholderapi:2.11.6")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.9.5")
+    compileOnly("me.clip:placeholderapi:2.12.2")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
 
-    compileOnly("org.jetbrains:annotations:24.0.0")
+    base.library(LibraryHelper.adventure("4.25.0"))
+    base.collectPluginHolders()
+
     implementation("com.github.technicallycoded:FoliaLib:0.4.4") { isTransitive = false }
-    implementation("top.mrxiaom.pluginbase:library:1.6.3")
-}
-java {
-    val javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+    for (artifact in pluginBaseModules) {
+        implementation(artifact)
     }
-    withSourcesJar()
+    implementation(base.resolver.lite)
 }
+
+LibraryHelper.initJava(project, base, targetJavaVersion, true)
+LibraryHelper.initPublishing(project)
+
+buildConfig {
+    className("BuildConstants")
+    packageName("top.mrxiaom.sweet.monitor")
+
+    base.doResolveLibraries()
+    buildConfigField("String", "VERSION", "\"${project.version}\"")
+    buildConfigField("java.time.Instant", "BUILD_TIME", "java.time.Instant.ofEpochSecond(${System.currentTimeMillis() / 1000L}L)")
+    buildConfigField("String[]", "RESOLVED_LIBRARIES", base.join())
+}
+
 tasks {
     shadowJar {
+        configurations.add(project.configurations.runtimeClasspath.get())
         mapOf(
             "top.mrxiaom.pluginbase" to "base",
             "com.tcoded.folialib" to "folialib",
         ).forEach { (original, target) ->
             relocate(original, "$shadowGroup.$target")
-        }
-    }
-    val copyTask = create<Copy>("copyBuildArtifact") {
-        dependsOn(shadowJar)
-        from(shadowJar.get().outputs)
-        rename { "${project.name}-$version.jar" }
-        into(rootProject.file("out"))
-    }
-    build {
-        dependsOn(copyTask)
-    }
-    withType<JavaCompile>().configureEach {
-        options.encoding = "UTF-8"
-        if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible) {
-            options.release.set(targetJavaVersion)
-        }
-    }
-    processResources {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        from(sourceSets.main.get().resources.srcDirs) {
-            expand(mapOf("version" to version))
-            include("plugin.yml")
-        }
-    }
-}
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components.getByName("java"))
-            groupId = project.group.toString()
-            artifactId = rootProject.name
-            version = project.version.toString()
         }
     }
 }

@@ -43,7 +43,7 @@ public class Monitor {
         if (player.getGameMode().equals(GameMode.SPECTATOR)) {
             player.setSpectatorTarget(null);
         }
-        plugin.teleportThen(player, oldLocation, () -> {
+        plugin.getScheduler().teleport(player, oldLocation, (e) -> {
             player.setGameMode(oldGameMode);
             player.setFlying(oldFlying);
         });
@@ -54,7 +54,7 @@ public class Monitor {
         this.target = target;
         if (target != null) {
             World world = target.getWorld();
-            plugin.teleportThen(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, () -> doSwitchTarget(target, world));
+            plugin.getScheduler().teleport(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, (e) -> doSwitchTarget(target, world));
         } else {
             player.setGameMode(GameMode.SPECTATOR);
             player.setSpectatorTarget(null);

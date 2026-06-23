@@ -20,7 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import top.mrxiaom.pluginbase.api.IRunTask;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ColorHelper;
-import top.mrxiaom.pluginbase.utils.PAPI;
+import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.monitor.SweetMonitor;
 import top.mrxiaom.sweet.monitor.data.ActiveType;
@@ -100,7 +100,7 @@ public class MonitorManager extends AbstractModule implements Listener {
                 if (autoTeleportDistance > 0) {
                     Double distance = distance(player, target);
                     if (distance == null || distance > 10) {
-                        plugin.teleportThen(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, () -> {
+                        plugin.getScheduler().teleport(player, target.getLocation(), PlayerTeleportEvent.TeleportCause.SPECTATE, (e) -> {
                             if (!player.getGameMode().equals(GameMode.SPECTATOR)) {
                                 player.setGameMode(GameMode.SPECTATOR);
                             }
@@ -180,7 +180,7 @@ public class MonitorManager extends AbstractModule implements Listener {
             players.removeIf(it -> it.getUniqueId().equals(oldTarget.getUniqueId()));
         }
         Player target = players.isEmpty() ? oldTarget : random(players);
-        plugin.getFoliaScheduler().runAtEntity(monitor.player, (t) -> {
+        plugin.getScheduler().runAtEntity(monitor.player, () -> {
             monitor.setTarget(target);
             if (target != null) {
                 monitorsByTarget.put(target.getUniqueId(), monitor);
@@ -309,7 +309,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         if (byTarget != null) {
             UUID uuid = byTarget.player.getUniqueId();
             if (monitors.containsKey(uuid)) {
-                plugin.getFoliaScheduler().runAtEntity(byTarget.player, (t) -> byTarget.setTarget(player));
+                plugin.getScheduler().runAtEntity(byTarget.player, () -> byTarget.setTarget(player));
             }
             return;
         }
@@ -317,7 +317,7 @@ public class MonitorManager extends AbstractModule implements Listener {
         if (monitor != null) {
             player.setGameMode(GameMode.SPECTATOR);
             if (autoSetTarget) {
-                plugin.getFoliaScheduler().runAtEntityLater(monitor.player, (t) -> {
+                plugin.getScheduler().runAtEntityLater(monitor.player, () -> {
                     player.setSpectatorTarget(null);
                     player.setSpectatorTarget(monitor.target);
                 }, teleportDelay);
@@ -378,7 +378,7 @@ public class MonitorManager extends AbstractModule implements Listener {
             if (restore) {
                 monitor.restore();
             } else {
-                plugin.getFoliaScheduler().runAtEntity(monitor.player, (t) -> monitor.setTarget(null));
+                plugin.getScheduler().runAtEntity(monitor.player, () -> monitor.setTarget(null));
             }
         }
     }
